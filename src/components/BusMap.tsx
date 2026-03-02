@@ -274,14 +274,13 @@ interface BusMapProps {
   highlightedStopName?: string | null;
   flyTo?: { lat: number; lng: number; zoom: number } | null;
   onFlyToDone?: () => void;
-  // Journey planner
   journeyFrom?: { lat: number; lng: number; name: string } | null;
   journeyTo?: { lat: number; lng: number; name: string } | null;
-  // TN Route tracking
   trackedTNRoute?: TNRoute | null;
   tnBusPosition?: { lat: number; lng: number } | null;
-  // Map style
   mapStyle?: MapStyleId;
+  /** Real road coordinates [lng, lat][] from TomTom Routing API */
+  roadRouteCoords?: [number, number][] | null;
 }
 
 export default function BusMap({
@@ -289,7 +288,7 @@ export default function BusMap({
   routes = [], selectedRouteId, highlightedRouteIds = [],
   highlightedStopName, flyTo, onFlyToDone,
   journeyFrom, journeyTo, trackedTNRoute, tnBusPosition,
-  mapStyle = 'night',
+  mapStyle = 'night', roadRouteCoords,
 }: BusMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<tt.Map | null>(null);
@@ -381,9 +380,11 @@ export default function BusMap({
     const activeRouteIds = new Set(activeBuses.map(b => b.route.id));
 
     const addLayers = () => {
-      // Draw TN tracked route polyline
+      // Draw TN tracked route polyline (use real road coords if available)
       if (trackedTNRoute) {
-        const coords = trackedTNRoute.stops.map(s => [s.lng, s.lat]);
+        const coords = roadRouteCoords && roadRouteCoords.length > 2
+          ? roadRouteCoords
+          : trackedTNRoute.stops.map(s => [s.lng, s.lat]);
         const sourceId = 'tn-tracked-route';
         const layerId = 'tn-tracked-route-layer';
         const glowLayerId = 'tn-tracked-route-glow';
@@ -612,7 +613,7 @@ export default function BusMap({
         .addTo(map);
       markersRef.current.push(marker);
     }
-  }, [buses, selectedBus, userLocation, onSelectBus, routes, selectedRouteId, highlightedRouteIds, highlightedStopName, trackedTNRoute, tnBusPosition, journeyFrom, journeyTo]);
+  }, [buses, selectedBus, userLocation, onSelectBus, routes, selectedRouteId, highlightedRouteIds, highlightedStopName, trackedTNRoute, tnBusPosition, journeyFrom, journeyTo, roadRouteCoords]);
 
   // Fly to selected bus smoothly
   useEffect(() => {

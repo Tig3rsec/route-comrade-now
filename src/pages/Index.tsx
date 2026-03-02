@@ -10,8 +10,10 @@ import JourneyPlanner from '@/components/JourneyPlanner';
 import RouteDetailSheet from '@/components/RouteDetailSheet';
 import DriverDashboard from '@/components/DriverDashboard';
 import { Bus } from '@/lib/mockData';
-import { type TNRoute, type TNRouteStop } from '@/lib/tnBusData';
+import { type TNRoute, type TNRouteStop, tnRoutes } from '@/lib/tnBusData';
 import { useTNBusSimulation } from '@/hooks/useTNBusSimulation';
+import { useRoadRoute } from '@/hooks/useRoadRoute';
+import { haversineKm } from '@/lib/etaUtils';
 import { motion } from 'framer-motion';
 import { MapPin, Bus as BusIcon, LogOut, LocateFixed } from 'lucide-react';
 import QuickActions from '@/components/QuickActions';
@@ -45,6 +47,7 @@ const Index = () => {
   const [selectedTNRoute, setSelectedTNRoute] = useState<TNRoute | null>(null);
   const [trackedTNRoute, setTrackedTNRoute] = useState<TNRoute | null>(null);
   const simulatedRoute = useTNBusSimulation(selectedTNRoute || trackedTNRoute, 8);
+  const { roadCoords } = useRoadRoute(trackedTNRoute || selectedTNRoute);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -159,6 +162,29 @@ const Index = () => {
     }
   }, [userLocation]);
 
+  // One-tap nearest bus tracking
+  const handleNearestBus = useCallback(() => {
+    if (!userLocation) return;
+    
+    // Find closest TN route based on user location
+    let bestRoute: TNRoute | null = null;
+    let bestDist = Infinity;
+    
+    for (const route of tnRoutes) {
+      for (const stop of route.stops) {
+        const dist = haversineKm(userLocation.lat, userLocation.lng, stop.lat, stop.lng);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestRoute = route;
+        }
+      }
+    }
+    
+    if (bestRoute) {
+      handleTrackTNRoute(bestRoute);
+    }
+  }, [userLocation, handleTrackTNRoute]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -194,6 +220,7 @@ const Index = () => {
         trackedTNRoute={trackedTNRoute}
         tnBusPosition={tnBusPosition}
         mapStyle={mapStyle}
+        roadRouteCoords={roadCoords}
       />
       <BusNotifications buses={buses} />
 
@@ -211,6 +238,7 @@ const Index = () => {
         onCenterUser={handleCenterOnUser}
         onExit={() => { setMode('select'); setSelectedRouteId(null); setSelectedStopName(null); setSelectedTNRoute(null); setTrackedTNRoute(null); }}
         onToggleSearch={() => {}}
+        onNearestBus={handleNearestBus}
         mapStyle={mapStyle}
         onMapStyleChange={setMapStyle}
         hasUserLocation={!!userLocation}

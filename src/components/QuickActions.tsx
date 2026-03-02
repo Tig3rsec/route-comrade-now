@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
-import { LocateFixed, LogOut, Home, Bus as BusIcon, Search } from 'lucide-react';
+import { LocateFixed, Home, Search, Navigation } from 'lucide-react';
 import MapStyleSwitcher, { type MapStyleId } from './MapStyleSwitcher';
 
 interface QuickActionsProps {
   onCenterUser: () => void;
   onExit: () => void;
   onToggleSearch: () => void;
+  onNearestBus: () => void;
   mapStyle: MapStyleId;
   onMapStyleChange: (style: MapStyleId) => void;
   hasUserLocation: boolean;
@@ -15,6 +16,7 @@ export default function QuickActions({
   onCenterUser,
   onExit,
   onToggleSearch,
+  onNearestBus,
   mapStyle,
   onMapStyleChange,
   hasUserLocation,
@@ -43,6 +45,14 @@ export default function QuickActions({
             onClick: onCenterUser,
             color: 'text-info hover:text-info',
           },
+          {
+            icon: <Navigation size={18} />,
+            label: 'Nearest',
+            tamil: 'அருகில்',
+            onClick: onNearestBus,
+            color: 'text-accent hover:text-accent',
+            pulse: true,
+          },
         ]
       : []),
   ];
@@ -56,7 +66,7 @@ export default function QuickActions({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: i * 0.05 }}
           onClick={btn.onClick}
-          className={`glass rounded-xl w-11 h-11 flex flex-col items-center justify-center transition-all active:scale-95 ${btn.color}`}
+          className={`glass rounded-xl w-11 h-11 flex flex-col items-center justify-center transition-all active:scale-95 ${btn.color} ${'pulse' in btn && btn.pulse ? 'ring-1 ring-accent/30' : ''}`}
           title={`${btn.label} (${btn.tamil})`}
         >
           {btn.icon}

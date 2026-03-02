@@ -1,0 +1,163 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 0 0% 7%;
+    --foreground: 0 0% 95%;
+
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 0 78% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 90%;
+
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 55%;
+
+    --accent: 145 72% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 56%;
+    --destructive-foreground: 0 0% 98%;
+
+    --warning: 38 92% 55%;
+    --warning-foreground: 0 0% 7%;
+
+    --success: 145 72% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --info: 210 100% 56%;
+    --info-foreground: 0 0% 7%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 0 78% 50%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 78% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 0 78% 50%;
+
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-tamil: 'Noto Sans Tamil', sans-serif;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  code, .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .font-tamil {
+    font-family: var(--font-tamil);
+  }
+}
+
+@layer utilities {
+  .glow-primary {
+    box-shadow: 0 0 20px hsl(0 78% 50% / 0.3), 0 0 60px hsl(0 78% 50% / 0.1);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px hsl(145 72% 40% / 0.3), 0 0 60px hsl(145 72% 40% / 0.1);
+  }
+
+  .glow-warning {
+    box-shadow: 0 0 20px hsl(38 92% 55% / 0.3);
+  }
+
+  .glow-destructive {
+    box-shadow: 0 0 20px hsl(0 72% 56% / 0.3);
+  }
+
+  .glass {
+    background: hsl(0 0% 10% / 0.85);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsl(0 0% 18% / 0.5);
+  }
+
+  .glass-light {
+    background: hsl(0 0% 10% / 0.6);
+    backdrop-filter: blur(12px);
+  }
+
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(0 78% 50%), hsl(0 78% 40%));
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, hsl(145 72% 40%), hsl(145 72% 32%));
+  }
+
+  .gradient-tn {
+    background: linear-gradient(135deg, hsl(0 78% 50%), hsl(0 78% 42%), hsl(145 72% 40%));
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(0 78% 60%), hsl(145 72% 50%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .pulse-dot {
+    animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-ring {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.5); }
+  }
+
+  .notification-slide-up {
+    animation: slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes slide-up {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
+/* TomTom map overrides */
+.mapboxgl-canvas {
+  outline: none;
+}
+
+.mapboxgl-ctrl-attrib {
+  display: none !important;
+}
+
+.bus-icon-wrapper {
+  transition: transform 3s ease-in-out;
+}

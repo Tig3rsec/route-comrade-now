@@ -14,6 +14,8 @@ import { type TNRoute, type TNRouteStop } from '@/lib/tnBusData';
 import { useTNBusSimulation } from '@/hooks/useTNBusSimulation';
 import { motion } from 'framer-motion';
 import { MapPin, Bus as BusIcon, LogOut, LocateFixed } from 'lucide-react';
+import QuickActions from '@/components/QuickActions';
+import type { MapStyleId } from '@/components/MapStyleSwitcher';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -33,6 +35,7 @@ const Index = () => {
   const [selectedBus, setSelectedBus] = useState<Bus | null>(null);
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
   const [mapFlyTo, setMapFlyTo] = useState<{ lat: number; lng: number; zoom: number } | null>(null);
+  const [mapStyle, setMapStyle] = useState<MapStyleId>('night');
 
   // Journey planner state
   const [journeyFrom, setJourneyFrom] = useState<{ lat: number; lng: number; name: string } | null>(null);
@@ -190,6 +193,7 @@ const Index = () => {
         journeyTo={journeyTo}
         trackedTNRoute={trackedTNRoute}
         tnBusPosition={tnBusPosition}
+        mapStyle={mapStyle}
       />
       <BusNotifications buses={buses} />
 
@@ -202,22 +206,15 @@ const Index = () => {
         selectedRouteId={selectedTNRoute?.id || null}
       />
 
-      {/* Control buttons */}
-      <div className="absolute top-4 right-4 z-[1001] flex flex-col gap-2">
-        <button
-          onClick={() => { setMode('select'); setSelectedRouteId(null); setSelectedStopName(null); setSelectedTNRoute(null); setTrackedTNRoute(null); }}
-          className="glass rounded-xl px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          ← Exit
-        </button>
-        <button
-          onClick={handleCenterOnUser}
-          className="glass rounded-xl w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-primary transition-colors"
-          title="Center on my location"
-        >
-          <LocateFixed size={18} />
-        </button>
-      </div>
+      {/* Quick action buttons with map style switcher */}
+      <QuickActions
+        onCenterUser={handleCenterOnUser}
+        onExit={() => { setMode('select'); setSelectedRouteId(null); setSelectedStopName(null); setSelectedTNRoute(null); setTrackedTNRoute(null); }}
+        onToggleSearch={() => {}}
+        mapStyle={mapStyle}
+        onMapStyleChange={setMapStyle}
+        hasUserLocation={!!userLocation}
+      />
 
       {/* Selected stop info banner */}
       {selectedStopName && (

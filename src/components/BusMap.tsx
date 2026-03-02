@@ -253,6 +253,16 @@ const TN_ROUTE_COLORS: Record<string, string> = {
   'ultra-deluxe': '#EF4444',
 };
 
+import type { MapStyleId } from './MapStyleSwitcher';
+
+const TOMTOM_STYLE_MAP: Record<MapStyleId, string> = {
+  night: 'basic_night',
+  day: 'basic_main',
+  satellite: 'hybrid_main',
+  terrain: 'basic_main',
+  hybrid: 'hybrid_main',
+};
+
 interface BusMapProps {
   buses: Bus[];
   selectedBus: Bus | null;
@@ -270,6 +280,8 @@ interface BusMapProps {
   // TN Route tracking
   trackedTNRoute?: TNRoute | null;
   tnBusPosition?: { lat: number; lng: number } | null;
+  // Map style
+  mapStyle?: MapStyleId;
 }
 
 export default function BusMap({
@@ -277,6 +289,7 @@ export default function BusMap({
   routes = [], selectedRouteId, highlightedRouteIds = [],
   highlightedStopName, flyTo, onFlyToDone,
   journeyFrom, journeyTo, trackedTNRoute, tnBusPosition,
+  mapStyle = 'night',
 }: BusMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<tt.Map | null>(null);
@@ -299,7 +312,7 @@ export default function BusMap({
       container: mapContainerRef.current,
       center,
       zoom: userLocation ? 13 : 7,
-      style: { map: 'basic_night' } as any,
+      style: { map: TOMTOM_STYLE_MAP[mapStyle] } as any,
     });
 
     mapRef.current = map;
@@ -324,6 +337,18 @@ export default function BusMap({
       style.remove();
     };
   }, []);
+
+  // Handle map style change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const styleName = TOMTOM_STYLE_MAP[mapStyle];
+    try {
+      (map as any).setStyle({ map: styleName });
+    } catch (e) {
+      console.warn('Style change error:', e);
+    }
+  }, [mapStyle]);
 
   // Handle flyTo
   useEffect(() => {

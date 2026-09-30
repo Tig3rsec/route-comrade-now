@@ -68,21 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        data: { display_name: displayName },
+        data: { display_name: displayName, role: selectedRole },
         emailRedirectTo: window.location.origin,
       },
     });
 
     if (error) return { error };
+    if (data.session) setRole(selectedRole);
 
-    // Insert role
-    if (data.user) {
-      const { error: roleError } = await supabase
-        .from('user_roles')
-        .insert({ user_id: data.user.id, role: selectedRole });
-      if (roleError) return { error: roleError as unknown as Error };
-      setRole(selectedRole);
-    }
 
     return { error: null };
   };

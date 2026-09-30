@@ -197,8 +197,7 @@ const Index = () => {
   }
 
   if (!user) return null;
-  if (mode === 'select') return <RoleSelect onSelect={setMode} userRole={role} onSignOut={signOut} />;
-  if (mode === 'driver') return <DriverDashboard onBack={() => setMode('select')} />;
+  if (mode === 'driver') return <DriverDashboard onBack={() => setMode('passenger')} />;
 
   const highlightedRouteIds = routesThroughStop.map(r => r.id);
 
@@ -219,6 +218,7 @@ const Index = () => {
         journeyTo={journeyTo}
         trackedTNRoute={trackedTNRoute}
         tnBusPosition={tnBusPosition}
+        tnSim={trackedTNRoute && simulatedRoute ? simulatedRoute.busPosition : null}
         mapStyle={mapStyle}
         roadRouteCoords={roadCoords}
       />

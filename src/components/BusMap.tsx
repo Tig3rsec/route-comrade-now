@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { createBusPinElement } from '@/lib/busPinMarker';
+import { snapToRoad, createVehicleElement } from '@/lib/roadSnap';
 import tt from '@tomtom-international/web-sdk-maps';
 import '@tomtom-international/web-sdk-maps/dist/maps.css';
 import { Bus } from '@/lib/mockData';
@@ -279,6 +280,7 @@ interface BusMapProps {
   journeyTo?: { lat: number; lng: number; name: string } | null;
   trackedTNRoute?: TNRoute | null;
   tnBusPosition?: { lat: number; lng: number } | null;
+  tnSim?: { stopIndex: number; progress: number } | null;
   mapStyle?: MapStyleId;
   /** Real road coordinates [lng, lat][] from TomTom Routing API */
   roadRouteCoords?: [number, number][] | null;
@@ -288,7 +290,7 @@ export default function BusMap({
   buses, selectedBus, onSelectBus, userLocation,
   routes = [], selectedRouteId, highlightedRouteIds = [],
   highlightedStopName, flyTo, onFlyToDone,
-  journeyFrom, journeyTo, trackedTNRoute, tnBusPosition,
+  journeyFrom, journeyTo, trackedTNRoute, tnBusPosition, tnSim,
   mapStyle = 'night', roadRouteCoords,
 }: BusMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -443,14 +445,6 @@ export default function BusMap({
           markersRef.current.push(marker);
         });
 
-        // Simulated bus marker
-        if (tnBusPosition) {
-          const tnBusEl = createBusPinElement(trackedTNRoute.routeNumber, '#1a73e8');
-          const marker = new tt.Marker({ element: tnBusEl })
-            .setLngLat([tnBusPosition.lng, tnBusPosition.lat])
-            .addTo(map);
-          markersRef.current.push(marker);
-        }
       }
 
       // Draw DB routes
@@ -614,7 +608,41 @@ export default function BusMap({
         .addTo(map);
       markersRef.current.push(marker);
     }
-  }, [buses, selectedBus, userLocation, onSelectBus, routes, selectedRouteId, highlightedRouteIds, highlightedStopName, trackedTNRoute, tnBusPosition, journeyFrom, journeyTo, roadRouteCoords]);
+  }, [buses, selectedBus, userLocation, onSelectBus, routes, selectedRouteId, highlightedRouteIds, highlightedStopName, trackedTNRoute, journeyFrom, journeyTo, roadRouteCoords]);
+
+  // Google-nav style vehicle: snapped to road, rotates, camera follows
+  const vehRef = useRef<tt.Marker | null>(null);
+  const followRef = useRef(true);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const onDrag = () => { followRef.current = false; };
+    map.on('dragstart', onDrag);
+    return () => { map.off('dragstart', onDrag); };
+  }, []);
+  useEffect(() => { followRef.current = true; }, [trackedTNRoute?.id]);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (!trackedTNRoute || !tnBusPosition) {
+      vehRef.current?.remove(); vehRef.current = null;
+      return;
+    }
+    const snapped = tnSim ? snapToRoad(roadRouteCoords as any, trackedTNRoute.stops, tnSim.stopIndex, tnSim.progress) : null;
+    const pos = snapped || { ...tnBusPosition, heading: 0 };
+    if (!vehRef.current) {
+      vehRef.current = new tt.Marker({ element: createVehicleElement(trackedTNRoute.routeNumber) })
+        .setLngLat([pos.lng, pos.lat]).addTo(map);
+    } else {
+      vehRef.current.setLngLat([pos.lng, pos.lat]);
+    }
+    const rot = vehRef.current.getElement().querySelector('.veh-rot') as HTMLElement | null;
+    const camBearing = followRef.current ? pos.heading : map.getBearing();
+    if (rot) rot.style.transform = `rotate(${pos.heading - camBearing}deg)`;
+    if (followRef.current) {
+      map.jumpTo({ center: [pos.lng, pos.lat] as any, bearing: pos.heading, pitch: 55, zoom: Math.max(map.getZoom(), 16.5) });
+    }
+  }, [trackedTNRoute, tnBusPosition?.lat, tnBusPosition?.lng, tnSim?.stopIndex, tnSim?.progress, roadRouteCoords]);
 
   // Fly to selected bus smoothly
   useEffect(() => {

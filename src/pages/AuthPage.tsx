@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { MapPin, Mail, Lock, User, Bus as BusIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import logoUrl from '@/assets/wayvo-logo.jpg';
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -50,9 +51,7 @@ export default function AuthPage() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl gradient-primary glow-primary flex items-center justify-center mx-auto mb-4">
-            <MapPin size={24} className="text-primary-foreground" />
-          </div>
+          <img src={logoUrl} alt="Bus tracker logo" className="w-24 h-24 rounded-3xl mx-auto mb-4 object-cover shadow-lg" />
           <h1 className="text-2xl font-heading font-bold text-foreground">
             Tamil Nadu<span className="text-gradient"> Transit</span>
           </h1>

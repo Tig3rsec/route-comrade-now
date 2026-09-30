@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { createBusPinElement } from '@/lib/busPinMarker';
 import tt from '@tomtom-international/web-sdk-maps';
 import '@tomtom-international/web-sdk-maps/dist/maps.css';
 import { Bus } from '@/lib/mockData';
@@ -444,7 +445,7 @@ export default function BusMap({
 
         // Simulated bus marker
         if (tnBusPosition) {
-          const tnBusEl = createTNBusMarker(trackedTNRoute.routeNumber, tnBusPosition.lat, tnBusPosition.lng, color);
+          const tnBusEl = createBusPinElement(trackedTNRoute.routeNumber, '#1a73e8');
           const marker = new tt.Marker({ element: tnBusEl })
             .setLngLat([tnBusPosition.lng, tnBusPosition.lat])
             .addTo(map);
@@ -584,7 +585,7 @@ export default function BusMap({
     // Bus markers
     activeBuses.forEach(bus => {
       const isSelected = selectedBus?.id === bus.id;
-      const el = createBusEmojiMarker(bus, isSelected);
+      const el = createBusPinElement(bus.number, '#1a73e8', bus.heading, isSelected);
       el.addEventListener('click', () => onSelectBus(bus));
       const marker = new tt.Marker({ element: el })
         .setLngLat([bus.currentPosition[1], bus.currentPosition[0]])

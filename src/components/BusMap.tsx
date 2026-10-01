@@ -279,6 +279,8 @@ interface BusMapProps {
   journeyFrom?: { lat: number; lng: number; name: string } | null;
   journeyTo?: { lat: number; lng: number; name: string } | null;
   trackedTNRoute?: TNRoute | null;
+  /** TN route whose path/stops should be shown on the map (selected but not necessarily tracked) */
+  visibleTNRoute?: TNRoute | null;
   tnBusPosition?: { lat: number; lng: number } | null;
   tnSim?: { stopIndex: number; progress: number } | null;
   tnLive?: { lat: number; lng: number; heading: number } | null;

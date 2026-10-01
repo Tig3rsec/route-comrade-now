@@ -293,7 +293,7 @@ export default function BusMap({
   buses, selectedBus, onSelectBus, userLocation,
   routes = [], selectedRouteId, highlightedRouteIds = [],
   highlightedStopName, flyTo, onFlyToDone,
-  journeyFrom, journeyTo, trackedTNRoute, tnBusPosition, tnSim, tnLive,
+  journeyFrom, journeyTo, trackedTNRoute, visibleTNRoute, tnBusPosition, tnSim, tnLive,
   mapStyle = 'night', roadRouteCoords,
 }: BusMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);

@@ -439,8 +439,8 @@ export default function BusMap({
 
         routeLayersRef.current.push(sourceId, layerId, glowLayerId);
 
-        // Stop markers for tracked route
-        trackedTNRoute.stops.forEach(stop => {
+        // Stop markers for shown route
+        shownTNRoute.stops.forEach(stop => {
           const marker = new tt.Marker({
             element: createStopMarkerElement(true, stop.name, false),
           })

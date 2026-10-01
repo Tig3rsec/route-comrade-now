@@ -612,7 +612,7 @@ export default function BusMap({
         .addTo(map);
       markersRef.current.push(marker);
     }
-  }, [buses, selectedBus, userLocation, onSelectBus, routes, selectedRouteId, highlightedRouteIds, highlightedStopName, trackedTNRoute, journeyFrom, journeyTo, roadRouteCoords]);
+  }, [buses, selectedBus, userLocation, onSelectBus, routes, selectedRouteId, highlightedRouteIds, highlightedStopName, trackedTNRoute, visibleTNRoute, journeyFrom, journeyTo, roadRouteCoords]);
 
   // Google-nav style vehicle: snapped to road, rotates, camera follows
   const vehRef = useRef<tt.Marker | null>(null);

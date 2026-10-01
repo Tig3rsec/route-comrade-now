@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { X, Clock, MapPin, Navigation, AlertTriangle, ChevronUp, Footprints, Loader2, Sparkles } from 'lucide-react';
 import type { TNRoute, TNRouteStop } from '@/lib/tnBusData';
+import { nextArrivals, fmtTime, minsUntil } from '@/lib/tnSchedule';
 
 type SheetState = 'collapsed' | 'half' | 'full';
 
@@ -11,13 +12,16 @@ interface RouteDetailSheetProps {
   onSelectStop: (stop: TNRouteStop) => void;
   aiSuggestion?: string | null;
   aiLoading?: boolean;
+  isLive?: boolean;
 }
 
 const COLLAPSED_HEIGHT = 120;
 const HALF_HEIGHT_RATIO = 0.5;
 const FULL_HEIGHT_RATIO = 0.9;
 
-export default function RouteDetailSheet({ route, onClose, onSelectStop, aiSuggestion, aiLoading }: RouteDetailSheetProps) {
+export default function RouteDetailSheet({ route, onClose, onSelectStop, aiSuggestion, aiLoading, isLive }: RouteDetailSheetProps) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => { const t = setInterval(() => setNow(new Date()), 30000); return () => clearInterval(t); }, []);
   const [sheetState, setSheetState] = useState<SheetState>('half');
   const [selectedStop, setSelectedStop] = useState<TNRouteStop | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -104,6 +108,9 @@ export default function RouteDetailSheet({ route, onClose, onSelectStop, aiSugge
                     {route.type}
                   </span>
                   <span className="text-xs text-muted-foreground">⏱ {route.frequency}</span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${isLive ? 'bg-accent/20 text-accent' : 'bg-secondary text-muted-foreground'}`}>
+                    {isLive ? '● LIVE GPS' : 'SCHEDULE'}
+                  </span>
                 </div>
                 <h3 className="text-foreground font-semibold text-lg leading-tight">{route.name}</h3>
                 <p className="text-muted-foreground text-sm mt-0.5">{route.tamil}</p>
@@ -200,6 +207,13 @@ export default function RouteDetailSheet({ route, onClose, onSelectStop, aiSugge
                             )}
                           </div>
                           <p className="text-muted-foreground text-xs mt-0.5">{stop.tamil}</p>
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            {nextArrivals(route, idx, now).map((t, i) => (
+                              <span key={i} className={`text-[11px] font-mono px-1.5 py-0.5 rounded-md ${i === 0 ? 'bg-primary/15 text-primary font-semibold' : 'bg-secondary/60 text-muted-foreground'}`}>
+                                {fmtTime(t)}{i === 0 ? ` · ${minsUntil(t, now)} min` : ''}
+                              </span>
+                            ))}
+                          </div>
 
                           {/* Distance & time to next */}
                           {!isLast && (

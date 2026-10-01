@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Pencil, Trash2, X, Bus as BusIcon } from 'lucide-react';
+import { tnRoutes } from '@/lib/tnBusData';
 import type { DriverBus, RouteOption } from '@/hooks/useDriverBuses';
 
 interface BusManagementFormProps {
   buses: DriverBus[];
   routes: RouteOption[];
-  onCreate: (data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null }) => Promise<any>;
-  onUpdate: (busId: string, data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null }) => Promise<any>;
+  onCreate: (data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null; tnRouteId?: string | null }) => Promise<any>;
+  onUpdate: (busId: string, data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null; tnRouteId?: string | null }) => Promise<any>;
   onDelete: (busId: string) => Promise<any>;
 }
 
@@ -20,6 +21,7 @@ interface FormData {
   type: string;
   totalSeats: number;
   routeId: string | null;
+  tnRouteId: string | null;
 }
 
 export default function BusManagementForm({ buses, routes, onCreate, onUpdate, onDelete }: BusManagementFormProps) {
@@ -31,13 +33,14 @@ export default function BusManagementForm({ buses, routes, onCreate, onUpdate, o
     type: 'Standard',
     totalSeats: 40,
     routeId: null,
+    tnRouteId: null,
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const openCreate = () => {
     setEditingBus(null);
-    setFormData({ number: '', color: '#3B82F6', type: 'Standard', totalSeats: 40, routeId: null });
+    setFormData({ number: '', color: '#3B82F6', type: 'Standard', totalSeats: 40, routeId: null, tnRouteId: null });
     setShowForm(true);
     setError('');
   };
@@ -50,6 +53,7 @@ export default function BusManagementForm({ buses, routes, onCreate, onUpdate, o
       type: bus.type,
       totalSeats: bus.totalSeats,
       routeId: bus.routeId,
+      tnRouteId: bus.tnRouteId,
     });
     setShowForm(true);
     setError('');
@@ -250,6 +254,22 @@ export default function BusManagementForm({ buses, routes, onCreate, onUpdate, o
                   <option key={r.id} value={r.id}>
                     {r.name}
                   </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-muted-foreground text-xs uppercase tracking-wider mb-1 block">
+                🚌 TN Route (passengers see your live GPS)
+              </label>
+              <select
+                value={formData.tnRouteId || ''}
+                onChange={(e) => setFormData((p) => ({ ...p, tnRouteId: e.target.value || null }))}
+                className="w-full bg-secondary border border-border rounded-xl py-2.5 px-3 text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="">None</option>
+                {tnRoutes.map((r) => (
+                  <option key={r.id} value={r.id}>{r.routeNumber} · {r.name}</option>
                 ))}
               </select>
             </div>

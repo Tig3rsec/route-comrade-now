@@ -386,15 +386,16 @@ export default function BusMap({
     const activeRouteIds = new Set(activeBuses.map(b => b.route.id));
 
     const addLayers = () => {
-      // Draw TN tracked route polyline (use real road coords if available)
-      if (trackedTNRoute) {
+      // Draw TN route polyline (tracked or just selected; use real road coords if available)
+      const shownTNRoute = trackedTNRoute || visibleTNRoute;
+      if (shownTNRoute) {
         const coords = roadRouteCoords && roadRouteCoords.length > 2
           ? roadRouteCoords
-          : trackedTNRoute.stops.map(s => [s.lng, s.lat]);
+          : shownTNRoute.stops.map(s => [s.lng, s.lat]);
         const sourceId = 'tn-tracked-route';
         const layerId = 'tn-tracked-route-layer';
         const glowLayerId = 'tn-tracked-route-glow';
-        const color = TN_ROUTE_COLORS[trackedTNRoute.type] || '#3B82F6';
+        const color = TN_ROUTE_COLORS[shownTNRoute.type] || '#3B82F6';
 
         if (!map.getSource(sourceId)) {
           map.addSource(sourceId, {

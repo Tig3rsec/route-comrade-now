@@ -73,6 +73,7 @@ export type Database = {
           number: string
           owner_id: string
           route_id: string | null
+          tn_route_id: string | null
           total_seats: number
           type: string
           updated_at: string
@@ -84,6 +85,7 @@ export type Database = {
           number: string
           owner_id: string
           route_id?: string | null
+          tn_route_id?: string | null
           total_seats?: number
           type?: string
           updated_at?: string
@@ -95,6 +97,7 @@ export type Database = {
           number?: string
           owner_id?: string
           route_id?: string | null
+          tn_route_id?: string | null
           total_seats?: number
           type?: string
           updated_at?: string

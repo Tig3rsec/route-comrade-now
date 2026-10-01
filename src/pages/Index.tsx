@@ -12,6 +12,7 @@ import DriverDashboard from '@/components/DriverDashboard';
 import { Bus } from '@/lib/mockData';
 import { type TNRoute, type TNRouteStop, tnRoutes } from '@/lib/tnBusData';
 import { useTNBusSimulation } from '@/hooks/useTNBusSimulation';
+import { useLiveTNBus } from '@/hooks/useLiveTNBus';
 import { useRoadRoute } from '@/hooks/useRoadRoute';
 import { haversineKm } from '@/lib/etaUtils';
 import { motion } from 'framer-motion';
@@ -48,6 +49,7 @@ const Index = () => {
   const [trackedTNRoute, setTrackedTNRoute] = useState<TNRoute | null>(null);
   const simulatedRoute = useTNBusSimulation(selectedTNRoute || trackedTNRoute, 8);
   const { roadCoords } = useRoadRoute(trackedTNRoute || selectedTNRoute);
+  const liveBus = useLiveTNBus((trackedTNRoute || selectedTNRoute)?.id || null);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -72,6 +74,21 @@ const Index = () => {
   const tnBusPosition = simulatedRoute
     ? { lat: (simulatedRoute as any)._simLat, lng: (simulatedRoute as any)._simLng }
     : null;
+
+  // When a driver is broadcasting, derive the stop progress from real GPS
+  const displayRoute = (() => {
+    if (!simulatedRoute || !liveBus) return simulatedRoute;
+    let best = 0, bd = Infinity;
+    simulatedRoute.stops.forEach((s, i) => {
+      const d = haversineKm(liveBus.lat, liveBus.lng, s.lat, s.lng);
+      if (d < bd) { bd = d; best = i; }
+    });
+    return {
+      ...simulatedRoute,
+      busPosition: { stopIndex: best, progress: 0 },
+      stops: simulatedRoute.stops.map((s, i) => ({ ...s, arrived: i <= best })),
+    };
+  })();
 
   // Fetch AI suggestion
   const fetchAiSuggestion = useCallback(async (route: TNRoute) => {
@@ -219,6 +236,7 @@ const Index = () => {
         trackedTNRoute={trackedTNRoute}
         tnBusPosition={tnBusPosition}
         tnSim={trackedTNRoute && simulatedRoute ? simulatedRoute.busPosition : null}
+        tnLive={liveBus}
         mapStyle={mapStyle}
         roadRouteCoords={roadCoords}
       />
@@ -295,7 +313,8 @@ const Index = () => {
 
       {/* Route Detail Bottom Sheet */}
       <RouteDetailSheet
-        route={simulatedRoute}
+        route={displayRoute}
+        isLive={!!liveBus}
         onClose={handleCloseTNRoute}
         onSelectStop={handleSelectTNStop}
         aiSuggestion={aiSuggestion}

@@ -10,6 +10,7 @@ export interface DriverBus {
   totalSeats: number;
   routeId: string | null;
   routeName: string | null;
+  tnRouteId: string | null;
 }
 
 export interface RouteOption {
@@ -44,6 +45,7 @@ export function useDriverBuses() {
         totalSeats: b.total_seats,
         routeId: b.route_id,
         routeName: b.routes?.name || null,
+        tnRouteId: b.tn_route_id || null,
       }))
     );
     setLoading(false);
@@ -57,7 +59,7 @@ export function useDriverBuses() {
   }, [user, fetchRoutes, fetchBuses]);
 
   const createBus = useCallback(
-    async (data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null }) => {
+    async (data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null; tnRouteId?: string | null }) => {
       if (!user) return null;
       const { data: bus, error } = await supabase
         .from('buses')
@@ -67,6 +69,7 @@ export function useDriverBuses() {
           type: data.type,
           total_seats: data.totalSeats,
           route_id: data.routeId,
+          tn_route_id: data.tnRouteId ?? null,
           owner_id: user.id,
         })
         .select()
@@ -79,7 +82,7 @@ export function useDriverBuses() {
   );
 
   const updateBus = useCallback(
-    async (busId: string, data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null }) => {
+    async (busId: string, data: { number: string; color: string; type: string; totalSeats: number; routeId: string | null; tnRouteId?: string | null }) => {
       const { error } = await supabase
         .from('buses')
         .update({
@@ -88,6 +91,7 @@ export function useDriverBuses() {
           type: data.type,
           total_seats: data.totalSeats,
           route_id: data.routeId,
+          tn_route_id: data.tnRouteId ?? null,
         })
         .eq('id', busId);
       if (error) return { error };

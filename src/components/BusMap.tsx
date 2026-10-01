@@ -281,6 +281,7 @@ interface BusMapProps {
   trackedTNRoute?: TNRoute | null;
   tnBusPosition?: { lat: number; lng: number } | null;
   tnSim?: { stopIndex: number; progress: number } | null;
+  tnLive?: { lat: number; lng: number; heading: number } | null;
   mapStyle?: MapStyleId;
   /** Real road coordinates [lng, lat][] from TomTom Routing API */
   roadRouteCoords?: [number, number][] | null;
@@ -290,7 +291,7 @@ export default function BusMap({
   buses, selectedBus, onSelectBus, userLocation,
   routes = [], selectedRouteId, highlightedRouteIds = [],
   highlightedStopName, flyTo, onFlyToDone,
-  journeyFrom, journeyTo, trackedTNRoute, tnBusPosition, tnSim,
+  journeyFrom, journeyTo, trackedTNRoute, tnBusPosition, tnSim, tnLive,
   mapStyle = 'night', roadRouteCoords,
 }: BusMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -624,12 +625,12 @@ export default function BusMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    if (!trackedTNRoute || !tnBusPosition) {
+    if (!trackedTNRoute || (!tnBusPosition && !tnLive)) {
       vehRef.current?.remove(); vehRef.current = null;
       return;
     }
-    const snapped = tnSim ? snapToRoad(roadRouteCoords as any, trackedTNRoute.stops, tnSim.stopIndex, tnSim.progress) : null;
-    const pos = snapped || { ...tnBusPosition, heading: 0 };
+    const snapped = tnLive ? tnLive : tnSim ? snapToRoad(roadRouteCoords as any, trackedTNRoute.stops, tnSim.stopIndex, tnSim.progress) : null;
+    const pos = snapped || { ...tnBusPosition!, heading: 0 };
     if (!vehRef.current) {
       vehRef.current = new tt.Marker({ element: createVehicleElement(trackedTNRoute.routeNumber) })
         .setLngLat([pos.lng, pos.lat]).addTo(map);
@@ -642,7 +643,7 @@ export default function BusMap({
     if (followRef.current) {
       map.jumpTo({ center: [pos.lng, pos.lat] as any, bearing: pos.heading, pitch: 55, zoom: Math.max(map.getZoom(), 16.5) });
     }
-  }, [trackedTNRoute, tnBusPosition?.lat, tnBusPosition?.lng, tnSim?.stopIndex, tnSim?.progress, roadRouteCoords]);
+  }, [trackedTNRoute, tnBusPosition?.lat, tnBusPosition?.lng, tnSim?.stopIndex, tnSim?.progress, roadRouteCoords, tnLive?.lat, tnLive?.lng, tnLive?.heading]);
 
   // Fly to selected bus smoothly
   useEffect(() => {
